@@ -16,7 +16,7 @@ private:
     bool g[gSize], m[mSize], tx[xxSize], rx[xxSize];
     int n;
 
-    void booldump(bool* array, int size);
+    void booldump(bool *array, int size, int op=0);
     int boolsave(bool* array, int size);
     void boolls(bool* array, int size); //left shift
     void boolrs(bool* array, int size); //right shift

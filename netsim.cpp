@@ -73,41 +73,133 @@ void NetSim::CRCSim()
     boolsave(m,mSize);
     cout << endl;
     //Compute here
+    bool fcs[n-1];
     for(int i=0; i<mSize; i++){
         tx[i+(xxSize-mSize)] = m[i];
     }
-    bool fcs[n-1];
     for(int i=0; i<n-1; i++){
         boolls(tx,xxSize);
     }
-    int i=0;
-    for(i=0; i<xxSize; i++){
-        if(tx[i] != 0)
+    int k=0,l=0;
+    for(k=0; k<xxSize; k++){
+        if(tx[k] != 0)
             break;
     }
-
+    for(l=0; l<gSize; l++){
+        if(g[l] != 0)
+            break;
+    }
+    while(k<(xxSize-n)){
+        if(tx[k] != 0){
+            //do xor
+            for(int j=0; j<n; j++){
+                if(tx[k+j] != g[l+j])
+                    tx[k+j]=1;
+                else
+                    tx[k+j]=0;
+            }
+        }
+        k++;
+    }
+    for(int i=n-2; i>=0; i--){
+        fcs[i] = tx[xxSize-(n-1)+i];
+    }
+    cout << "FCS(R): ";
+    booldump(fcs,4,1);
+    cout << endl;
+    for(int i=0; i<mSize; i++){
+        tx[i+(xxSize-mSize)] = m[i];
+    }
+    for(int i=0; i<n-1; i++){
+        boolls(tx,xxSize);
+    }
+    for(int i=n-2; i>=0; i--){
+        tx[xxSize-(n-1)+i] = fcs[i]; //copy n-1 bit of fcs in the end of tx
+    }
 
     //noise here
     cout << "We transmitte final messgae (shown below) and lets make some noise here." << endl;
-    cout << "                             \t";
+    cout << "                             \tTx:";
     booldump(tx,xxSize);
     cout << endl;
-    cout << "what do you expect to recive?\t";
+    cout << "what do you expect to recive?\tRx:";
     boolsave(rx,xxSize);
     cout << endl;
 
     //Check here
+    for(k=0; k<xxSize; k++){
+        if(tx[k] != 0)
+            break;
+    }
+    for(l=0; l<gSize; l++){
+        if(g[l] != 0)
+            break;
+    }
+    while(k<(xxSize-n)){
+        if(rx[k] != 0){
+            //do xor
+            for(int j=0; j<n; j++){
+                if(rx[k+j] != g[l+j])
+                    rx[k+j]=1;
+                else
+                    rx[k+j]=0;
+            }
+        }
+        k++;
+    }
+    cout << "the R of recive is: ";
+    booldump(rx,xxSize);
+    cout << endl;
+    int i;
+    for(i=0; i<xxSize; i++){
+        if(rx[i] == 1)
+            break;
+    }
+    if(i==xxSize){
+        cout << "the transmission was succesfull";
+    }else
+        cout << "an error acuered in transmission plz try again";
 
+    int ans=-1;
 
+    while(ans<0 || ans>4){
+        cout << "now what do you wanna do:" << endl;
+        cout << "1) Retry" << endl;
+        cout << "2) back to menu" << endl;
+        cout << "3) totally exit" << endl;
 
-
-    code = -1;
+        ans=0;
+        int ch=0;
+        while(ch!='\r' && ch!='\n'){
+            ch=getch();
+            if(ch>='0'&&ch<='9'){
+                cout << (char)ch;
+                ch-='0';
+                ans=(ans*10)+ch;
+            }
+        }
+        cout << endl;
+    }
+    switch(ans){
+    case 1:
+        code = 1;
+        break;
+    case 2:
+        code = -1;
+        break;
+    case 3:
+        code = 0;
+        break;
+    default:
+        code = -1;
+    }
 }
 
-void NetSim::booldump(bool *array, int size)
+void NetSim::booldump(bool *array, int size, int op)
 {
     int i=0;
-    for(; i<size && array[i] == 0; i++);
+    if(op == 0)
+        for(; i<size && array[i] == 0; i++);
     for(; i<size; i++){
         cout << (char)(array[i] + '0');
     }
